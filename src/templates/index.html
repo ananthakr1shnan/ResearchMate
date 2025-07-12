@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}ResearchMate - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Hero Section -->
+        <div class="hero-section text-center py-5 mb-5 fade-in">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-brain me-3 text-warning"></i>
+                    Welcome to ResearchMate
+                </h1>
+                <p class="lead mb-4">
+                    Your AI-powered research assistant, designed to accelerate your research workflow with advanced paper analysis, literature reviews, and trend monitoring.
+                </p>
+                <p class="mb-4 opacity-75">
+                    Powered by <strong class="text-warning">Groq Llama 3.3 70B</strong> with Retrieval-Augmented Generation (RAG)
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="/search" class="btn btn-warning btn-lg shadow">
+                        <i class="fas fa-search me-2"></i>Start Searching
+                    </a>
+                    <a href="/projects" class="btn btn-outline-light btn-lg shadow">
+                        <i class="fas fa-project-diagram me-2"></i>Create Project
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="text-center mb-5 text-primary-custom">What You Can Do</h2>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm fade-in">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-search fa-3x text-info"></i>
+                        </div>
+                        <h4 class="card-title text-primary-custom">Smart Paper Search</h4>
+                        <p class="card-text text-muted">
+                            Search across multiple academic databases including arXiv, Semantic Scholar, and more. Get instant access to relevant research papers.
+                        </p>
+                        <a href="/search" class="btn btn-info shadow-sm">
+                            <i class="fas fa-arrow-right me-1"></i>Try Search
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm fade-in">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-question-circle fa-3x text-success"></i>
+                        </div>
+                        <h4 class="card-title text-primary-custom">Ask Questions</h4>
+                        <p class="card-text text-muted">
+                            The more context it has, the better it gets. Upload papers or search them first — our Q&A system uses that data to give you research-backed answers.
+                        </p>
+                        <a href="/search" class="btn btn-success shadow-sm">
+                            <i class="fas fa-question me-1"></i>Ask Questions
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm fade-in">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-project-diagram fa-3x text-primary"></i>
+                        </div>
+                        <h4 class="card-title text-primary-custom">Research Projects</h4>
+                        <p class="card-text text-muted">
+                            Create and manage research projects. Conduct literature searches, analyze papers, and generate comprehensive reviews.
+                        </p>
+                        <a href="/projects" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-plus me-1"></i>Start Project
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- More Features -->
+        <div class="row mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm card-enhanced slide-in-up">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-chart-line fa-3x text-warning"></i>
+                        </div>
+                        <h4 class="card-title text-primary-custom">Research Trends</h4>
+                        <p class="card-text text-muted">
+                            Monitor emerging research trends, identify key researchers, and track the evolution of research areas over time.
+                        </p>
+                        <a href="/trends" class="btn btn-warning shadow-sm interactive-element">
+                            <i class="fas fa-chart-bar me-1"></i>View Trends
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm card-enhanced slide-in-up">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-upload fa-3x text-danger"></i>
+                        </div>
+                        <h4 class="card-title text-primary-custom">PDF Analysis</h4>
+                        <p class="card-text text-muted">
+                            Upload research papers and get AI-powered analysis, summaries, and insights from your documents.
+                        </p>
+                        <a href="/upload" class="btn btn-danger shadow-sm interactive-element">
+                            <i class="fas fa-file-upload me-1"></i>Upload PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm card-enhanced slide-in-up">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-network-wired fa-3x text-secondary"></i>
+                        </div>
+                        <h4 class="card-title text-primary-custom">Citation Network</h4>
+                        <p class="card-text text-muted">
+                            Analyze citation and author networks to discover influential papers, collaboration patterns, and research impact.
+                        </p>
+                        <a href="/citation" class="btn btn-secondary shadow-sm interactive-element">
+                            <i class="fas fa-project-diagram me-1"></i>View Citation Network
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card text-center slide-in-up" style="background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));">
+                    <div class="card-body py-5">
+                        <h2 class="gradient-text mb-4">Ready to Accelerate Your Research?</h2>
+                        <p class="lead text-muted mb-4">
+                            Kickstart your research productivity with ResearchMate — your intelligent assistant awaits
+                        </p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="/search" class="btn btn-primary btn-lg shadow interactive-element">
+                                <i class="fas fa-rocket me-2"></i>Get Started
+                            </a>
+                            <a href="/docs" class="btn btn-outline-primary btn-lg shadow interactive-element" target="_blank">
+                                <i class="fas fa-book me-2"></i>API Documentation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                    
+        <!-- Quick Start -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h3 class="card-title text-center mb-4">Quick Start</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-search text-primary me-2"></i>Search Papers</h5>
+                                <p>Try searching for topics like "transformer neural networks" or "computer vision" to see ResearchMate in action.</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-question-circle text-success me-2"></i>Ask Questions</h5>
+                                <p>Ask questions like "What are the latest developments in NLP?" or "How do transformers work?" and get instant results.</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-project-diagram text-info me-2"></i>Create Project</h5>
+                                <p>Start a new research project to organize your literature review and analysis workflow.</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-file-pdf text-danger me-2"></i>Upload PDF</h5>
+                                <p>Upload a research paper to get instant analysis and add it to your knowledge base.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-heartbeat me-2"></i>System Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="system-status" class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span>Checking system status...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Load system status
+document.addEventListener('DOMContentLoaded', function() {
+    loadSystemStatus();
+});
+
+function loadSystemStatus() {
+    // Load system status (components and general info)
+    makeAuthenticatedRequest('/api/status')
+        .then(response => response.json())
+        .then(systemData => {
+            // Load user-specific statistics
+            makeAuthenticatedRequest('/api/user/status')
+                .then(response => response.json())
+                .then(userData => {
+                    const statusDiv = document.getElementById('system-status');
+                    if (systemData.success && userData.success) {
+                        const userStats = userData.statistics;
+                        const systemStats = systemData.statistics;
+                        statusDiv.innerHTML = `
+                            <div class="row w-100">
+                                <div class="col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-circle text-success me-2"></i>
+                                        <strong>System: Operational</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-project-diagram text-info me-2"></i>
+                                        <span>Your Projects: ${userStats.total_projects || 0}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-database text-warning me-2"></i>
+                                        <span>Documents: ${systemStats.rag_documents || 0}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-brain text-primary me-2"></i>
+                                        <span>AI: Groq Llama 3.3 70B</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Fallback to system-only view if user data fails
+                        showSystemOnlyStatus(systemData);
+                    }
+                })
+                .catch(error => {
+                    // Fallback to system-only view if user status fails
+                    showSystemOnlyStatus(systemData);
+                });
+        })
+        .catch(error => {
+            document.getElementById('system-status').innerHTML = `
+                <div class="d-flex align-items-center text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span>Failed to load system status</span>
+                </div>
+            `;
+        });
+}
+
+function showSystemOnlyStatus(systemData) {
+    const statusDiv = document.getElementById('system-status');
+    if (systemData.success) {
+        const systemStats = systemData.statistics;
+        statusDiv.innerHTML = `
+            <div class="row w-100">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-circle text-success me-2"></i>
+                        <strong>System: Operational</strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-database text-warning me-2"></i>
+                        <span>Documents: ${systemStats.rag_documents || 0}</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-brain text-primary me-2"></i>
+                        <span>AI: Groq Llama 3.3 70B</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        statusDiv.innerHTML = `
+            <div class="d-flex align-items-center text-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span>System Error: ${systemData.error || 'Unknown error'}</span>
+            </div>
+        `;
+    }
+}
+</script>
+{% endblock %}

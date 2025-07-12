@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResearchMate - Loading</title>
+    <link href="{{ url_for('static', path='css/loader.css') }}" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap-loader">
+        <div class="loader">
+            <div class="box"></div>
+            <div class="box"></div>
+            <div class="box"></div>
+            <div class="box"></div>
+            <div class="wrap-text">
+                <div class="text">
+                    <span>L</span><span>O</span><span>A</span><span>D</span><span>I</span><span>N</span><span>G</span><span>...</span>
+                </div>
+            </div>
+        </div>
+        <div class="loader-text">Initializing ResearchMate...</div>
+    </div>
+
+    <script>
+        let checkCount = 0;
+        const maxChecks = 60; // Maximum 60 checks (1 minute)
+        
+        // Check initialization status
+        async function checkInitStatus() {
+            try {
+                const response = await fetch('/api/init-status');
+                const data = await response.json();
+                
+                console.log('Init status:', data);
+                
+                if (data.initialized) {
+                    // ResearchMate is initialized, redirect to login
+                    window.location.href = '/login';
+                } else if (data.status === 'not_started' && checkCount > 5) {
+                    // If not started after 5 seconds, trigger manually
+                    console.log('Triggering initialization manually...');
+                    await fetch('/api/trigger-init', { method: 'POST' });
+                } 
+                
+                checkCount++;
+                
+                // Update status text based on progress
+                const statusText = document.querySelector('.loader-text');
+                if (data.in_progress) {
+                    statusText.textContent = 'Initializing ResearchMate...';
+                } else if (data.status === 'not_started') {
+                    statusText.textContent = 'Starting initialization...';
+                } else {
+                    statusText.textContent = 'Loading components...';
+                }
+                
+                // Continue checking if not initialized and haven't exceeded max checks
+                if (!data.initialized && checkCount < maxChecks) {
+                    setTimeout(checkInitStatus, 1000);
+                } else if (checkCount >= maxChecks) {
+                    // Timeout - show error or redirect anyway
+                    statusText.textContent = 'Taking longer than expected... Redirecting...';
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error checking init status:', error);
+                checkCount++;
+                
+                // Retry after 2 seconds on error, but not forever
+                if (checkCount < maxChecks) {
+                    setTimeout(checkInitStatus, 2000);
+                } else {
+                    // Give up and redirect
+                    window.location.href = '/login';
+                }
+            }
+        }
+
+        // Start checking initialization status immediately
+        checkInitStatus();
+    </script>
+</body>
+</html>

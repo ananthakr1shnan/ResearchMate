@@ -1,0 +1,699 @@
+{% extends "base.html" %}
+
+{% block title %}ResearchMate - Projects{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Projects Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 text-primary-custom">
+                <i class="fas fa-project-diagram me-2 text-success"></i>Research Projects
+            </h1>
+            <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                <i class="fas fa-plus me-2"></i>Create New Project
+            </button>
+        </div>
+
+        <!-- Projects List -->
+        <div id="projects-container">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading projects...</span>
+                </div>
+                <p class="mt-3 text-muted">Loading projects...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Project Modal -->
+<div class="modal fade" id="createProjectModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg" style="color: #222;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #222;">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Create New Project
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-project-form">
+                    <div class="mb-3">
+                        <label for="project-name" class="form-label fw-bold">Project Name</label>
+                        <input type="text" class="form-control" id="project-name" name="name" 
+                               placeholder="e.g., Transformer Models in NLP" required>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1 text-info"></i>
+                            Choose a descriptive name for your research project
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="research-question" class="form-label fw-bold">Research Question</label>
+                        <textarea class="form-control" id="research-question" name="research_question" rows="3"
+                                  placeholder="e.g., How do transformer models improve performance in natural language processing tasks?"
+                                  required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="keywords" class="form-label">Keywords (comma-separated)</label>
+                        <input type="text" class="form-control" id="keywords" name="keywords" 
+                               placeholder="e.g., transformer, attention, NLP, neural networks" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="create-project-form" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Project
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Details Modal -->
+<div class="modal fade" id="projectDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-project-diagram me-2"></i>Project Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="project-details-content">
+                    <!-- Project details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const createProjectForm = document.getElementById('create-project-form');
+    const projectsContainer = document.getElementById('projects-container');
+    
+    // Load projects on page load
+    loadProjects();
+
+    // Create project form handler
+    createProjectForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('project-name').value;
+        const researchQuestion = document.getElementById('research-question').value;
+        const keywords = document.getElementById('keywords').value.split(',').map(k => k.trim());
+        
+        createProject(name, researchQuestion, keywords);
+    });
+
+    function loadProjects() {
+        makeAuthenticatedRequest('/api/projects')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Projects API response:', data); // Debug log
+                if (data.success) {
+                    displayProjects(data.projects);
+                } else {
+                    displayError(data.error || 'Failed to load projects');
+                }
+            })
+            .catch(error => {
+                console.error('Projects loading error:', error); // Debug log
+                displayError('Network error: ' + error.message);
+            });
+    }
+
+    function createProject(name, researchQuestion, keywords) {
+        const submitBtn = document.querySelector('button[form="create-project-form"]') || 
+                          document.querySelector('#create-project-form button[type="submit"]') ||
+                          document.querySelector('.modal-footer button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.innerHTML : '';
+        
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...';
+            submitBtn.disabled = true;
+        }
+
+        fetch('/api/projects', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({
+                name: name,
+                research_question: researchQuestion,
+                keywords: keywords
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal and reset form
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createProjectModal'));
+                modal.hide();
+                createProjectForm.reset();
+                
+                // Reload projects
+                loadProjects();
+                
+                // Show success message
+                showAlert('success', 'Project created successfully!');
+            } else {
+                showAlert('danger', data.error || 'Failed to create project');
+            }
+        })
+        .catch(error => {
+            showAlert('danger', 'Network error: ' + error.message);
+        })
+        .finally(() => {
+            if (submitBtn) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
+    function displayProjects(projects) {
+        console.log('Displaying projects:', projects); // Debug log
+        
+        if (!projects || projects.length === 0) {
+            projectsContainer.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No projects yet</h4>
+                    <p class="text-muted">Create your first research project to get started!</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                        <i class="fas fa-plus me-2"></i>Create Project
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        const html = `
+    <div class="row">
+        ${projects.map(project => `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">${escapeHtml(project.name || 'Untitled Project')}</h5>
+                        <p class="card-text">
+                            <small class="text-muted">${escapeHtml(project.research_question || 'No research question')}</small>
+                        </p>
+                        <div class="mb-2">
+                            <span class="badge bg-${project.status === 'active' ? 'success' : 'secondary'} me-2">
+                                ${project.status || 'unknown'}
+                            </span>
+                            <span class="badge bg-info">${(project.papers || []).length} papers</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Created: ${new Date(project.created_at).toLocaleDateString()}
+                            </small>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewProject('${project.id}')">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="searchLiterature('${project.id}')">
+                                    <i class="fas fa-search me-1"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('')}
+    </div>
+`;
+
+projectsContainer.innerHTML = html;
+    }
+
+    function displayError(message) {
+        projectsContainer.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Error:</strong> ${message}
+            </div>
+        `;
+    }
+
+    function showAlert(type, message, duration = 10000) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+        
+        // Store reference to current alert
+        window.currentActiveAlert = alert;
+        // Only auto-dismiss if duration > 0
+        if (duration > 0) {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                    if (window.currentActiveAlert === alert) {
+                        window.currentActiveAlert = null;
+                    }
+                }
+            }, duration);
+        }
+    }
+
+    // Global functions for project actions
+    window.viewProject = function(projectId) {
+        fetch(`/api/projects/${projectId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayProjectDetails(data.project);
+                } else {
+                    showAlert('danger', data.error || 'Failed to load project');
+                }
+            })
+            .catch(error => {
+                showAlert('danger', 'Network error: ' + error.message);
+            });
+    };
+
+    window.searchLiterature = function(projectId) {
+        // Find the button that was clicked and show loading state
+        const button = event.target.closest('button');
+        const originalText = button ? button.innerHTML : '';
+        
+        if (button) {
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+            button.disabled = true;
+            button.classList.add('btn-warning');
+            button.classList.remove('btn-success', 'btn-outline-success');
+        }
+        
+        // Show persistent loading message (no auto-dismiss)
+        showAlert('info', 'Literature search in progress... This may take a few minutes.', 0); // 0 = no auto-dismiss
+        
+        fetch(`/api/projects/${projectId}/search`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove loading alert if present
+            if (window.currentActiveAlert && window.currentActiveAlert.parentNode) {
+                window.currentActiveAlert.remove();
+                window.currentActiveAlert = null;
+            }
+            if (data.success) {
+                showAlert('success', `Found ${data.papers_found || 0} papers for the project!`);
+                loadProjects(); // Reload to show updated paper count
+                // Display search results if available
+                if (data.papers && data.papers.length > 0) {
+                    displaySearchResults(data.papers, projectId);
+                }
+            } else {
+                showAlert('danger', data.error || 'Literature search failed');
+            }
+        })
+        .catch(error => {
+            showAlert('danger', 'Network error: ' + error.message);
+        })
+        .finally(() => {
+            // Restore button state
+            if (button) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                button.classList.remove('btn-warning');
+                button.classList.add('btn-success');
+            }
+        });
+    };
+
+    function displayProjectDetails(project) {
+        const detailsContent = document.getElementById('project-details-content');
+        
+        detailsContent.innerHTML = `
+            <div class="mb-3">
+                <h6 class="text-primary">Project Name:</h6>
+                <p>${project.name}</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="text-primary">Research Question:</h6>
+                <p>${project.research_question}</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="text-primary">Keywords:</h6>
+                <div>
+                    ${project.keywords.map(keyword => `<span class="badge bg-secondary me-1">${keyword}</span>`).join('')}
+                </div>
+            </div>
+            <div class="mb-3">
+                <h6 class="text-primary">Status:</h6>
+                <span class="badge bg-${project.status === 'active' ? 'success' : 'secondary'}">${project.status}</span>
+            </div>
+            <div class="mb-3">
+                <h6 class="text-primary">Papers:</h6>
+                <p>${project.papers ? project.papers.length : 0} papers collected</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="text-primary">Created:</h6>
+                <p>${new Date(project.created_at).toLocaleString()}</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" onclick="searchLiterature('${project.id}')">
+                    <i class="fas fa-search me-2"></i>Search Literature
+                </button>
+                <button class="btn btn-info" onclick="analyzeProject('${project.id}')">
+                    <i class="fas fa-chart-bar me-2"></i>Analyze
+                </button>
+                <button class="btn btn-warning" onclick="generateReview('${project.id}')">
+                    <i class="fas fa-file-alt me-2"></i>Generate Review
+                </button>
+            </div>
+        `;
+        
+        const modal = new bootstrap.Modal(document.getElementById('projectDetailsModal'));
+        modal.show();
+    }
+
+    window.analyzeProject = function(projectId) {
+        // Find the button that was clicked and show loading state
+        const button = event.target.closest('button');
+        const originalText = button ? button.innerHTML : '';
+        
+        if (button) {
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+            button.disabled = true;
+            button.classList.add('btn-warning');
+            button.classList.remove('btn-info', 'btn-outline-info');
+        }
+        
+        showAlert('info', 'Analyzing project data... This may take a few minutes.', 0);
+        
+        fetch(`/api/projects/${projectId}/analyze`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove loading alert if present
+            if (window.currentActiveAlert && window.currentActiveAlert.parentNode) {
+                window.currentActiveAlert.remove();
+                window.currentActiveAlert = null;
+            }
+            if (data.success) {
+                showAlert('success', 'Project analysis completed!');
+                // Display analysis results
+                if (data.analysis) {
+                    displayAnalysisResults(data.analysis, projectId);
+                }
+            } else {
+                showAlert('danger', data.error || 'Analysis failed');
+            }
+        })
+        .catch(error => {
+            showAlert('danger', 'Network error: ' + error.message);
+        })
+        .finally(() => {
+            // Restore button state
+            if (button) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                button.classList.remove('btn-warning');
+                button.classList.add('btn-info');
+            }
+        });
+    };
+
+    window.generateReview = function(projectId) {
+        // Find the button that was clicked and show loading state
+        const button = event.target.closest('button');
+        const originalText = button ? button.innerHTML : '';
+        
+        if (button) {
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+            button.disabled = true;
+            button.classList.add('btn-info');
+            button.classList.remove('btn-warning', 'btn-outline-warning');
+        }
+        
+        showAlert('info', 'Generating literature review... This may take several minutes.', 0); // 0 = no auto-dismiss
+        
+        fetch(`/api/projects/${projectId}/review`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Review response:', data); // Debug log
+            // Remove loading alert if present
+            if (window.currentActiveAlert && window.currentActiveAlert.parentNode) {
+                window.currentActiveAlert.remove();
+                window.currentActiveAlert = null;
+            }
+            if (data.success) {
+                showAlert('success', 'Literature review generated!');
+                // Display the generated review
+                if (data.review) {
+                    console.log('Review data:', data.review); // Debug log
+                    displayLiteratureReview(data.review, projectId);
+                } else {
+                    showAlert('warning', 'Review generated but no content received');
+                }
+            } else {
+                showAlert('danger', data.error || 'Review generation failed');
+            }
+        })
+        .catch(error => {
+            showAlert('danger', 'Network error: ' + error.message);
+        })
+        .finally(() => {
+            // Restore button state
+            if (button) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                button.classList.remove('btn-info');
+                button.classList.add('btn-warning');
+            }
+        });
+    };
+
+    // Functions to display results
+    function displaySearchResults(papers, projectId) {
+        // Defensive: avoid nested template literals and ensure all dynamic content is escaped
+        const papersHtml = papers.map(function(paper) {
+            const title = escapeHtml(paper.title || 'Untitled');
+            const authors = escapeHtml(paper.authors || 'Unknown authors');
+            const year = escapeHtml(paper.year || 'Unknown year');
+            const abstract = escapeHtml((paper.abstract || 'No abstract available').substring(0, 150));
+            let urlLink = '';
+            if (paper.url) {
+                urlLink = '<a href="' + escapeHtml(paper.url) + '" target="_blank" class="btn btn-sm btn-outline-primary">' +
+                    '<i class="fas fa-external-link-alt me-1"></i>View Paper' +
+                    '</a>';
+            }
+            return [
+                '<div class="col-md-6 mb-3">',
+                '  <div class="card h-100">',
+                '    <div class="card-body">',
+                '      <h6 class="card-title">' + title + '</h6>',
+                '      <p class="text-muted small mb-2">',
+                '        <i class="fas fa-users me-1"></i>' + authors,
+                '      </p>',
+                '      <p class="text-muted small mb-2">',
+                '        <i class="fas fa-calendar me-1"></i>' + year,
+                '      </p>',
+                '      <p class="card-text small">' + abstract + '...</p>',
+                '      ' + urlLink,
+                '    </div>',
+                '  </div>',
+                '</div>'
+            ].join('');
+        }).join('');
+
+        const modalContent = [
+            '<div class="mb-3">',
+            '  <h6 class="text-primary">Found ' + papers.length + ' papers:</h6>',
+            '</div>',
+            '<div class="row">',
+            papersHtml,
+            '</div>'
+        ].join('');
+        const modal = createResultModal('Literature Search Results', modalContent);
+        modal.show();
+    }
+
+    function displayAnalysisResults(analysis, projectId) {
+        // Store analysis data globally for download
+        window.currentAnalysis = analysis;
+        
+        const modal = createResultModal('Project Analysis Results', `
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Overview</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Total Papers:</strong> ${analysis.total_papers || 'N/A'}</p>
+                            <p><strong>Key Topics:</strong> ${analysis.key_topics ? analysis.key_topics.join(', ') : 'N/A'}</p>
+                            <p><strong>Research Trends:</strong> ${analysis.trends || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Key Insights</h6>
+                        </div>
+                        <div class="card-body">
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${analysis.insights ? marked.parse(analysis.insights) : 'No insights available'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class="fas fa-brain me-2"></i>Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                ${analysis.summary ? marked.parse(analysis.summary) : 'No summary available'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary me-2" onclick="downloadAnalysis('${projectId}')">
+                    <i class="fas fa-download me-1"></i>Download Analysis
+                </button>
+            </div>
+        `);
+        modal.show();
+    }
+
+    function displayLiteratureReview(review, projectId) {
+        // Store review data globally for download
+        window.currentReview = review;
+        
+        const modal = createResultModal('Literature Review', `
+            <div class="card">
+                <div class="card-body">
+                    <div style="max-height: 600px; overflow-y: auto;">
+                        ${review.content ? marked.parse(review.content) : 'No review content available'}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                <button class="btn btn-success me-2" onclick="downloadReview('${projectId}')">
+                    <i class="fas fa-download me-1"></i>Download Review
+                </button>
+                <button class="btn btn-info" onclick="copyReview('${projectId}')">
+                    <i class="fas fa-copy me-1"></i>Copy to Clipboard
+                </button>
+            </div>
+        `);
+        modal.show();
+    }
+
+    function createResultModal(title, content) {
+        // Remove existing result modal if it exists
+        const existingModal = document.getElementById('resultModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Create new modal
+        const modalHtml = `
+            <div class="modal fade" id="resultModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            ${content}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        return new bootstrap.Modal(document.getElementById('resultModal'));
+    }
+
+    // Global storage for results
+    window.currentAnalysis = null;
+    window.currentReview = null;
+
+    // Utility function to escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Analysis-specific functions (global scope)
+    window.downloadAnalysis = function(projectId) {
+        if (window.currentAnalysis) {
+            const analysisText = JSON.stringify(window.currentAnalysis, null, 2);
+            window.downloadText(analysisText, `analysis_${projectId}.json`);
+        } else {
+            showAlert('danger', 'No analysis data available to download', 3000);
+        }
+    };
+
+    // Review-specific functions (global scope)
+    window.downloadReview = function(projectId) {
+        if (window.currentReview && window.currentReview.content) {
+            window.downloadText(window.currentReview.content, `review_${projectId}.md`);
+        } else {
+            showAlert('danger', 'No review content available to download', 3000);
+        }
+    };
+
+    window.copyReview = function(projectId) {
+        if (window.currentReview && window.currentReview.content) {
+            window.copyToClipboard(window.currentReview.content);
+        } else {
+            showAlert('danger', 'No review content available to copy', 3000);
+        }
+    };
+});
+</script>
+{% endblock %}

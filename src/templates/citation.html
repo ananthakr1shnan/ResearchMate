@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Citation Network Analysis</h2>
+    <h3>(Search research paper topics to get citation network)</h3>
+    {% if summary.error %}
+    <div class="alert alert-warning">
+        <strong>Error:</strong> {{ summary.error }}
+    </div>
+    {% else %}
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Overall Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Total Papers: <strong>{{ summary.overall_stats.total_papers }}</strong></li>
+                        <li class="list-group-item">Total Authors: <strong>{{ summary.overall_stats.total_authors }}</strong></li>
+                        <li class="list-group-item">Papers per Author: <strong>{{ "%.2f"|format(summary.overall_stats.papers_per_author) }}</strong></li>
+                        <li class="list-group-item">Collaborations per Author: <strong>{{ "%.2f"|format(summary.overall_stats.collaborations_per_author) }}</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Author Network</h5>
+                </div>
+                <div class="card-body">
+                    {% if summary.author_network.error %}
+                    <p class="text-muted">{{ summary.author_network.error }}</p>
+                    {% else %}
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Total Authors: <strong>{{ summary.author_network.network_metrics.total_authors }}</strong></li>
+                        <li class="list-group-item">Total Collaborations: <strong>{{ summary.author_network.network_metrics.total_collaborations }}</strong></li>
+                        <li class="list-group-item">Network Density: <strong>{{ "%.4f"|format(summary.author_network.network_metrics.network_density) }}</strong></li>
+                        <li class="list-group-item">Connected Components: <strong>{{ summary.author_network.network_metrics.number_of_components }}</strong></li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Top Collaborative Authors</h5>
+                </div>
+                <div class="card-body">
+                    {% if summary.author_network.top_collaborators %}
+                    <ol>
+                        {% for author, count in summary.author_network.top_collaborators %}
+                        <li>{{ author }} <span class="badge badge-primary">{{ count }} collaborations</span></li>
+                        {% endfor %}
+                    </ol>
+                    {% else %}
+                    <p class="text-muted">No collaboration data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Top Productive Authors</h5>
+                </div>
+                <div class="card-body">
+                    {% if summary.author_network.top_productive_authors %}
+                    <ol>
+                        {% for author, count in summary.author_network.top_productive_authors %}
+                        <li>{{ author }} <span class="badge badge-success">{{ count }} papers</span></li>
+                        {% endfor %}
+                    </ol>
+                    {% else %}
+                    <p class="text-muted">No productivity data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% endif %}
+</div>
+{% endblock %}

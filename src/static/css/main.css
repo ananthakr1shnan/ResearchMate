@@ -1,0 +1,326 @@
+.form-text {
+  color: var(--text-primary) !important;
+}
+footer, footer .text-muted, footer .text-secondary, footer .small, footer .text-body {
+  color: #111 !important;
+}
+h1, h2, h3, h4, h5, h6, .card-title, .form-label, .gradient-text, .feature-icon, .alert, .table thead th, .table tbody td, .form-control, .form-select, .form-control::placeholder, .form-label {
+  color: var(--text-primary) !important;
+}
+
+.text-muted, .text-secondary, .text-dark, .text-black, .text-body, .small, .opacity-75 {
+  color: var(--text-secondary) !important;
+}
+/* CSS Variables: Theme Colors */
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --accent-color: #e74c3c;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --info-color: #13d7f5;
+
+  /* Dark Theme Defaults */
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --input-bg: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --border-color: #404040;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --hover-bg: rgba(255, 255, 255, 0.1);
+  --scrollbar-track: #444444;
+}
+
+/* Global Reset */
+* {
+  box-sizing: border-box;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  padding: 3rem 2rem;
+}
+
+.hero-section h1 {
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  color: white; /* Explicit white for hero text */
+}
+
+.hero-section p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  color: white; /* Explicit white for hero text */
+}
+
+/* Navbar */
+.navbar {
+  box-shadow: 0 2px 4px var(--shadow-color);
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--secondary-color) !important;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+.navbar-nav .nav-link {
+  font-weight: 500;
+  border-radius: 0.375rem;
+  margin: 0 0.25rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+  color: var(--text-primary) !important;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-primary) !important;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white !important;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success-color), #2ecc71);
+  color: white !important;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, var(--info-color), #3498db);
+  color: white !important;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--warning-color), #e67e22);
+  color: white !important;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--accent-color), #c0392b);
+  color: white !important;
+}
+
+/* Cards */
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.card-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white !important;
+  border-radius: 15px 15px 0 0;
+  padding: 1.5rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-body {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
+/* Form Controls */
+.form-control,
+.form-select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  padding: 0.75rem 1rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.form-control::placeholder {
+  color: var(--text-secondary);
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+/* Alerts */
+.alert {
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid;
+  border: 1px solid var(--border-color);
+}
+
+.alert-success {
+  background-color: rgba(39, 174, 96, 0.1);
+  color: var(--success-color);
+  border-left-color: var(--success-color);
+}
+
+.alert-info {
+  background-color: rgba(23, 162, 184, 0.1);
+  color: var(--info-color);
+  border-left-color: var(--info-color);
+}
+
+.alert-warning {
+  background-color: rgba(243, 156, 18, 0.1);
+  color: var(--warning-color);
+  border-left-color: var(--warning-color);
+}
+
+.alert-danger {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--accent-color);
+  border-left-color: var(--accent-color);
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead th {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white !important;
+  padding: 1rem;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.table tbody td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.table tbody tr:hover {
+  background-color: var(--hover-bg);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .navbar-nav .nav-link {
+    text-align: center;
+    margin: 0.25rem 0;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary-color) var(--scrollbar-track);
+}
+
+/* ResearchMate modal form label and help text color override */
+#createProjectModal .form-label,
+#createProjectModal .form-text {
+    color: #222 !important;
+}
+#projectDetailsModal .form-label,
+#projectDetailsModal .form-text,
+#projectDetailsModal label,
+#projectDetailsModal h5,
+#projectDetailsModal h6,
+#projectDetailsModal p,
+#projectDetailsModal span {
+    color: #222 !important;
+}
+
+/* Make all text in the register modal body black */
+#registerModal .modal-body,
+#registerModal .modal-body label,
+#registerModal .modal-body input,
+#registerModal .modal-body .form-label {
+    color: #000 !important;
+}
+

@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}ResearchMate - Search Papers{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Search Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 text-primary-custom">
+                <i class="fas fa-search me-2 text-info"></i>Search Research Papers
+            </h1>
+            <div class="badge bg-gradient" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                <i class="fas fa-brain me-1"></i>AI-Powered Search
+            </div>
+        </div>
+
+        <!-- Search Form -->
+        <div class="card mb-4 shadow-sm">
+            <!-- Timing Info Banner -->
+            <div class="alert alert-info border-0 rounded-0 mb-0" style="border-radius: 0.375rem 0.375rem 0 0!important;">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <div>
+                        <strong>First Search Info:</strong> Initial search may take 30-60 seconds for system initialization. 
+                        Subsequent searches are much faster (~10 seconds).
+                    </div>
+                </div>
+            </div>
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-search me-2"></i>Search Parameters
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="search-form">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="query" class="form-label fw-bold">Search Query</label>
+                                <input type="text" class="form-control" id="query" name="query" 
+                                       placeholder="e.g., transformer neural networks, computer vision, attention mechanisms"
+                                       required>
+                                <div class="form-text">
+                                    <i class="fas fa-lightbulb me-1 text-warning"></i>
+                                    Use specific keywords, author names, or research topics for better results
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="max_results" class="form-label fw-bold">Max Results</label>
+                                <select class="form-select" id="max_results" name="max_results">
+                                    <option value="10" selected>10</option>
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-primary shadow-sm" onclick="handleSearchClick()">
+                            <i class="fas fa-search me-2"></i>Search Papers
+                        </button>
+                        <div class="text-muted">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                Searches arXiv, Semantic Scholar, Crossref, and PubMed
+                                <br>
+                                <i class="fas fa-clock me-1 text-warning"></i>
+                                <strong>Search may take 30-60 seconds</strong> for comprehensive results
+                            </small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="text-center mb-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-3">
+                <h5 id="loading-title">Processing your request...</h5>
+                <p id="loading-message" class="text-muted mb-2">Initializing search...</p>
+                <div class="progress mt-2" style="max-width: 400px; margin: 0 auto;">
+                    <div id="loading-progress" class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 10%"></div>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    <i class="fas fa-clock me-1"></i>
+                    This may take 30-60 seconds for comprehensive multi-source search
+                </small>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results-container"></div>
+
+        <!-- Ask Question Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Ask a Research Question
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="question-form">
+                    <div class="mb-3">
+                        <label for="question" class="form-label">Your Question</label>
+                        <input type="text" class="form-control" id="question" name="question" 
+                               placeholder="e.g., What are the latest developments in transformer models?"
+                               required>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-magic me-2"></i>Ask Question
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Global search handler function
+window.handleSearchClick = function() {
+    const queryInput = document.getElementById('query');
+    const maxResultsSelect = document.getElementById('max_results');
+    
+    if (!queryInput || !maxResultsSelect) {
+        alert('Search form elements not found');
+        return;
+    }
+    
+    const query = queryInput.value.trim();
+    const maxResults = parseInt(maxResultsSelect.value);
+    
+    if (!query) {
+        alert('Please enter a search query');
+        queryInput.focus();
+        return;
+    }
+    
+    performDirectSearch(query, maxResults);
+};
+
+// Add search examples when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Enter key handler for better UX
+    setTimeout(function() {
+        const queryInput = document.getElementById('query');
+        
+        if (queryInput) {
+            queryInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSearchClick();
+                }
+            });
+        }
+        
+        // Example searches
+        const examples = [
+            'transformer neural networks',
+            'computer vision deep learning', 
+            'attention mechanisms',
+            'natural language processing',
+            'reinforcement learning'
+        ];
+
+        // Function to trigger search with example
+        window.searchExample = function(query) {
+            const queryInput = document.getElementById('query');
+            if (queryInput) {
+                queryInput.value = query;
+                performDirectSearch(query, 10);
+            }
+        };
+
+        // Add example buttons with proper onclick handlers
+        const exampleButtons = examples.map(example => 
+            `<button class="btn btn-sm btn-outline-secondary me-2 mb-2" onclick="searchExample('${example}')">${example}</button>`
+        ).join('');
+
+        // Add examples to search form
+        const searchFormCard = document.querySelector('#search-form').closest('.card-body');
+        if (searchFormCard) {
+            searchFormCard.innerHTML += `
+                <div class="mt-3">
+                    <small class="text-muted">Try these examples:</small><br>
+                    ${exampleButtons}
+                </div>
+            `;
+        }
+    }, 100);
+});
+
+// Direct search function that handles the search process
+function performDirectSearch(query, maxResults = 10) {
+    const loadingDiv = document.getElementById('loading');
+    const resultsContainer = document.getElementById('results-container');
+    
+    // Show loading
+    if (loadingDiv) {
+        loadingDiv.style.display = 'block';
+    }
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+    }
+    
+    // Update loading message
+    const loadingMessage = document.getElementById('loading-message');
+    const loadingProgress = document.getElementById('loading-progress');
+    
+    if (loadingMessage) {
+        loadingMessage.innerHTML = `<i class="fas fa-search me-1"></i>Searching for: "${query}"...`;
+    }
+    if (loadingProgress) {
+        loadingProgress.style.width = '30%';
+    }
+    
+    // Perform the search
+    const token = localStorage.getItem('authToken');
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    fetch('/api/search', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ query: query, max_results: maxResults })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Hide loading
+        if (loadingDiv) {
+            loadingDiv.style.display = 'none';
+        }
+        
+        if (data.success && data.papers) {
+            displaySearchResults(data);
+        } else {
+            displayError(data.error || 'Search failed');
+        }
+    })
+    .catch(error => {
+        console.error('Search error:', error);
+        
+        // Hide loading
+        if (loadingDiv) {
+            loadingDiv.style.display = 'none';
+        }
+        
+        displayError('Network error: ' + error.message);
+    });
+}
+
+// Display search results function
+function displaySearchResults(data) {
+    const resultsContainer = document.getElementById('results-container');
+    const papers = data.papers || [];
+    
+    if (papers.length === 0) {
+        resultsContainer.innerHTML = `
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                No papers found for "${data.query}". Try different keywords.
+            </div>
+        `;
+        return;
+    }
+    
+    const html = `
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-search me-2"></i>Search Results for "${data.query}"
+                    <span class="badge bg-primary ms-2">${papers.length} papers found</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    ${papers.map((paper, index) => {
+                        const title = paper.title || 'Untitled';
+                        const authors = Array.isArray(paper.authors) ? paper.authors.join(', ') : (paper.authors || 'Unknown authors');
+                        const year = paper.year || paper.published_year || 'Unknown year';
+                        const source = paper.source || 'ArXiv';
+                        const abstract = paper.abstract ? (paper.abstract.length > 200 ? paper.abstract.substring(0, 200) + '...' : paper.abstract) : 'No abstract available';
+                        const url = paper.url || paper.arxiv_url || '#';
+                        
+                        return `
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 shadow-sm result-item">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <a href="${url}" target="_blank" class="text-decoration-none">
+                                                ${title}
+                                            </a>
+                                        </h6>
+                                        <p class="text-muted mb-2">
+                                            <small>
+                                                <i class="fas fa-users me-1"></i>
+                                                ${authors}
+                                            </small>
+                                        </p>
+                                        <p class="text-muted mb-2">
+                                            <small>
+                                                <i class="fas fa-calendar me-1"></i>
+                                                ${year}
+                                                <i class="fas fa-database ms-2 me-1"></i>
+                                                ${source}
+                                            </small>
+                                        </p>
+                                        <p class="card-text">
+                                            <small>${abstract}</small>
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-external-link-alt me-1"></i>View Paper
+                                            </a>
+                                            ${paper.pdf_url ? `
+                                                <a href="${paper.pdf_url}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-file-pdf me-1"></i>PDF
+                                                </a>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    resultsContainer.innerHTML = html;
+}
+
+// Display error function
+function displayError(message) {
+    const resultsContainer = document.getElementById('results-container');
+    resultsContainer.innerHTML = `
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Error:</strong> ${message}
+        </div>
+    `;
+}
+</script>
+{% endblock %}

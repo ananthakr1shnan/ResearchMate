@@ -1,0 +1,554 @@
+{% extends "base.html" %}
+
+{% block title %}ResearchMate - Research Trends{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Trends Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 text-primary-custom">
+                <i class="fas fa-chart-line me-2 text-danger"></i>Research Trends
+            </h1>
+            <div class="badge bg-gradient" style="background: linear-gradient(135deg, var(--success-color), #2ecc71);">
+                <i class="fas fa-sync-alt me-1"></i>Real-time Analysis
+            </div>
+        </div>
+
+        <!-- Trend Analysis Form -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-search me-2"></i>Advanced Trend Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="trend-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="topic" class="form-label fw-bold">Research Topic</label>
+                                <input type="text" class="form-control" id="topic" name="topic" 
+                                       placeholder="e.g., artificial intelligence, machine learning, deep learning"
+                                       required>
+                                <div class="form-text">
+                                    <i class="fas fa-lightbulb me-1 text-warning"></i>
+                                    Enter a research topic for comprehensive trend analysis
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+    <div class="row">
+        <div class="col-sm-7">
+            <div class="mb-0">
+                <label for="analysis-type" class="form-label fw-bold">Analysis Type</label>
+                <select class="form-select" id="analysis-type">
+                    <option value="comprehensive">Comprehensive Analysis</option>
+                    <option value="temporal">Temporal Trends</option>
+                    <option value="gaps">Research Gaps</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-warning w-100 shadow-sm">
+                <i class="fas fa-chart-line me-2"></i>Analyze Trends
+            </button>
+        </div>
+    </div>
+</div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="text-center mb-4 py-4" style="display: none;">
+            <div class="spinner-border text-warning" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted">Analyzing research trends...</p>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results-container"></div>
+
+        <!-- Popular Topics -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-fire me-2"></i>Popular Research Topics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>AI & Machine Learning</h6>
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <span class="badge bg-primary trend-topic" data-topic="transformer models">Transformer Models</span>
+                                    <span class="badge bg-primary trend-topic" data-topic="large language models">Large Language Models</span>
+                                    <span class="badge bg-primary trend-topic" data-topic="computer vision">Computer Vision</span>
+                                    <span class="badge bg-primary trend-topic" data-topic="reinforcement learning">Reinforcement Learning</span>
+                                    <span class="badge bg-primary trend-topic" data-topic="neural networks">Neural Networks</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Emerging Technologies</h6>
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <span class="badge bg-success trend-topic" data-topic="quantum computing">Quantum Computing</span>
+                                    <span class="badge bg-success trend-topic" data-topic="edge computing">Edge Computing</span>
+                                    <span class="badge bg-success trend-topic" data-topic="federated learning">Federated Learning</span>
+                                    <span class="badge bg-success trend-topic" data-topic="explainable AI">Explainable AI</span>
+                                    <span class="badge bg-success trend-topic" data-topic="multimodal learning">Multimodal Learning</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- marked.js is loaded globally in base.html -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Utility: Render markdown using a JS markdown parser (marked.js)
+    // Requires marked.js to be loaded in the page
+    function renderMarkdown(text) {
+        if (typeof marked !== 'undefined') {
+            return marked.parseInline(text || '');
+        }
+        // fallback: return as plain text if marked is not loaded
+        return text || '';
+    }
+    const trendForm = document.getElementById('trend-form');
+    const resultsContainer = document.getElementById('results-container');
+    const loadingDiv = document.getElementById('loading');
+
+    // Trend form handler
+    trendForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const topic = document.getElementById('topic').value;
+        const analysisType = document.getElementById('analysis-type').value;
+        analyzeTrends(topic, analysisType);
+    });
+
+    // Popular topic badges handler
+    document.querySelectorAll('.trend-topic').forEach(badge => {
+        badge.addEventListener('click', function() {
+            const topic = this.dataset.topic;
+            document.getElementById('topic').value = topic;
+            const analysisType = document.getElementById('analysis-type').value;
+            analyzeTrends(topic, analysisType);
+        });
+    });
+
+    function showLoading() {
+        loadingDiv.style.display = 'block';
+        resultsContainer.innerHTML = '';
+    }
+
+    function hideLoading() {
+        loadingDiv.style.display = 'none';
+    }
+
+    function analyzeTrends(topic, analysisType = 'comprehensive') {
+        showLoading();
+        
+        let apiEndpoint = '/api/trends';
+        if (analysisType === 'temporal') {
+            apiEndpoint = '/api/trends/temporal';
+        } else if (analysisType === 'gaps') {
+            apiEndpoint = '/api/trends/gaps';
+        }
+        
+        fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ topic: topic })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (analysisType === 'temporal') {
+                displayTemporalResults(data);
+            } else if (analysisType === 'gaps') {
+                displayGapResults(data);
+            } else {
+                displayComprehensiveResults(data);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            displayError('Network error: ' + error.message);
+        });
+    }
+
+    function displayTrendResults(data) {
+        // Legacy function - redirect to comprehensive results
+        displayComprehensiveResults(data);
+    }
+
+    function displayError(message) {
+        const html = `
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Error:</strong> ${message}
+            </div>
+        `;
+        
+        resultsContainer.innerHTML = html;
+    }
+
+    function displayComprehensiveResults(data) {
+        if (data.error) {
+            displayError(data.error);
+            return;
+        }
+
+        // --- AI result rendering: use renderMarkdown for all AI-generated text fields ---
+        function renderGapList(label, items, key) {
+            if (!items || !Array.isArray(items) || items.length === 0) return `<li><strong>${label}:</strong> None</li>`;
+            return `<li><strong>${label} (${items.length}):</strong> ${items.map(gap => renderMarkdown(gap[key])).join(', ')}</li>`;
+        }
+
+        const html = `
+            <div class="row">
+                <!-- Executive Summary -->
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>Executive Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                ${renderMarkdown(data.executive_summary || 'Executive summary not available')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Temporal Trends -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>Temporal Trends
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            ${data.temporal_trends && data.temporal_trends.temporal_analysis ? `
+                                <ul class="list-unstyled">
+                                    <li><strong>Year Range:</strong> ${renderMarkdown(data.temporal_trends.temporal_analysis.year_range)}</li>
+                                    <li><strong>Peak Year:</strong> ${renderMarkdown(data.temporal_trends.temporal_analysis.peak_year)}</li>
+                                    <li><strong>Growth Rate:</strong> ${renderMarkdown(data.temporal_trends.growth_analysis?.growth_rate_percent?.toFixed(1) || 'N/A')}%</li>
+                                    <li><strong>Trend Direction:</strong> ${renderMarkdown(data.temporal_trends.growth_analysis?.trend_direction || 'N/A')}</li>
+                                </ul>
+                            ` : '<p class="text-muted">Temporal analysis not available</p>'}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research Gaps -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-search me-2"></i>Research Gaps
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            ${data.research_gaps && data.research_gaps.analysis_summary ? `
+                                <ul class="list-unstyled">
+                                    ${renderGapList('Methodology Gaps', data.research_gaps.methodology_gaps, 'method')}
+                                    ${renderGapList('Research Area Gaps', data.research_gaps.research_area_gaps, 'area')}
+                                    ${renderGapList('Data Type Gaps', data.research_gaps.data_type_gaps, 'data_type')}
+                                </ul>
+                            ` : '<p class="text-muted">Gap analysis not available</p>'}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emerging Topics -->
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-rocket me-2"></i>Emerging Topics
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            ${data.emerging_topics && data.emerging_topics.emerging_topics ? `
+                                <div class="row">
+                                    ${data.emerging_topics.emerging_topics.slice(0, 10).map(topic => `
+                                        <div class="col-md-6 mb-2">
+                                            <span class="badge bg-success me-2">${renderMarkdown(topic)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : '<p class="text-muted">Emerging topics not available</p>'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        resultsContainer.innerHTML = html;
+    }
+
+    function displayTemporalResults(data) {
+        if (data.error || (data.temporal_analysis && data.temporal_analysis.error)) {
+            displayError(data.error || data.temporal_analysis.error);
+            return;
+        }
+
+        const temporal = data.temporal_analysis;
+        const html = `
+            <div class="row">
+                <!-- Overview -->
+                <div class="col-md-4 mb-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>Overview
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Topic:</strong> ${data.topic}</li>
+                                <li><strong>Papers Analyzed:</strong> ${data.papers_analyzed}</li>
+                                <li><strong>Year Range:</strong> ${temporal.temporal_analysis?.year_range || 'N/A'}</li>
+                                <li><strong>Peak Year:</strong> ${temporal.temporal_analysis?.peak_year || 'N/A'}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Growth Analysis -->
+                <div class="col-md-8 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>Growth Analysis
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            ${temporal.growth_analysis ? `
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="text-center">
+                                            <h4 class="text-primary">${temporal.growth_analysis.growth_rate_percent?.toFixed(1) || 'N/A'}%</h4>
+                                            <p class="text-muted">Growth Rate</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="text-center">
+                                            <h4 class="text-${temporal.growth_analysis.trend_direction === 'growing' ? 'success' : temporal.growth_analysis.trend_direction === 'declining' ? 'danger' : 'warning'}">${temporal.growth_analysis.trend_direction || 'N/A'}</h4>
+                                            <p class="text-muted">Trend Direction</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : '<p class="text-muted">Growth analysis not available</p>'}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Publication Trend -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-calendar me-2"></i>Publication Trend
+                            </h5>
+                            <div class="year-chart">
+                                ${temporal.publication_trend ? Object.entries(temporal.publication_trend).map(([year, count]) => `
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>${year}</span>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress me-2" style="width: 100px; height: 20px;">
+                                                <div class="progress-bar" style="width: ${(count / Math.max(...Object.values(temporal.publication_trend))) * 100}%"></div>
+                                            </div>
+                                            <span class="badge bg-primary">${count}</span>
+                                        </div>
+                                    </div>
+                                `).join('') : '<p class="text-muted">Publication trend data not available</p>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emerging vs Declining Topics -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-exchange-alt me-2"></i>Topic Evolution
+                            </h5>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <h6 class="text-success">Emerging Topics</h6>
+                                    ${temporal.emerging_topics && temporal.emerging_topics.topics ? temporal.emerging_topics.topics.slice(0, 5).map(topic => `
+                                        <span class="badge bg-success me-1 mb-1">${topic}</span>
+                                    `).join('') : '<p class="text-muted small">No emerging topics detected</p>'}
+                                </div>
+                                <div class="col-12">
+                                    <h6 class="text-danger">Declining Topics</h6>
+                                    ${temporal.declining_topics && temporal.declining_topics.topics ? temporal.declining_topics.topics.slice(0, 5).map(topic => `
+                                        <span class="badge bg-danger me-1 mb-1">${topic}</span>
+                                    `).join('') : '<p class="text-muted small">No declining topics detected</p>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        resultsContainer.innerHTML = html;
+    }
+
+    function displayGapResults(data) {
+        if (data.error || (data.gap_analysis && data.gap_analysis.error)) {
+            displayError(data.error || data.gap_analysis.error);
+            return;
+        }
+
+        const gaps = data.gap_analysis;
+        const html = `
+            <div class="row">
+                <!-- Overview -->
+                <div class="col-md-4 mb-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>Gap Analysis Overview
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Topic:</strong> ${data.topic}</li>
+                                <li><strong>Papers Analyzed:</strong> ${data.papers_analyzed}</li>
+                                <li><strong>Total Gaps Found:</strong> ${(gaps.methodology_gaps?.length || 0) + (gaps.research_area_gaps?.length || 0) + (gaps.data_type_gaps?.length || 0)}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Analysis -->
+                <div class="col-md-8 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-robot me-2"></i>AI Gap Analysis
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                ${gaps.ai_analysis || 'AI analysis not available'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Methodology Gaps -->
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-cog me-2"></i>Methodology Gaps
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            ${gaps.methodology_gaps && gaps.methodology_gaps.length > 0 ? `
+                                <ul class="list-unstyled">
+                                    ${gaps.methodology_gaps.slice(0, 5).map(gap => `
+                                        <li class="mb-2">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="fw-bold">${gap.method}</span>
+                                                <span class="badge bg-warning">${gap.coverage_percent?.toFixed(1)}%</span>
+                                            </div>
+                                            <small class="text-muted">${gap.papers_count} papers</small>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            ` : '<p class="text-muted">No methodology gaps detected</p>'}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research Area Gaps -->
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-search me-2"></i>Research Area Gaps
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            ${gaps.research_area_gaps && gaps.research_area_gaps.length > 0 ? `
+                                <ul class="list-unstyled">
+                                    ${gaps.research_area_gaps.slice(0, 5).map(gap => `
+                                        <li class="mb-2">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="fw-bold">${gap.area}</span>
+                                                <span class="badge bg-info">${gap.coverage_percent?.toFixed(1)}%</span>
+                                            </div>
+                                            <small class="text-muted">${gap.papers_count} papers</small>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            ` : '<p class="text-muted">No research area gaps detected</p>'}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Type Gaps -->
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-database me-2"></i>Data Type Gaps
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            ${gaps.data_type_gaps && gaps.data_type_gaps.length > 0 ? `
+                                <ul class="list-unstyled">
+                                    ${gaps.data_type_gaps.slice(0, 5).map(gap => `
+                                        <li class="mb-2">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="fw-bold">${gap.data_type}</span>
+                                                <span class="badge bg-success">${gap.coverage_percent?.toFixed(1)}%</span>
+                                            </div>
+                                            <small class="text-muted">${gap.papers_count} papers</small>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            ` : '<p class="text-muted">No data type gaps detected</p>'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        resultsContainer.innerHTML = html;
+    }
+
+    // Add some trending topics on page load
+    const trendingTopics = [
+        { topic: "ChatGPT", description: "Large language models and conversational AI" },
+        { topic: "Stable Diffusion", description: "Text-to-image generation models" },
+        { topic: "Vision Transformers", description: "Transformers applied to computer vision" },
+        { topic: "Graph Neural Networks", description: "Deep learning on graph-structured data" },
+        { topic: "Few-shot Learning", description: "Learning with limited training data" }
+    ];
+
+    // You can add trending topics display here if needed
+});
+</script>
+{% endblock %}
