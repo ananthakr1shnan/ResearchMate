@@ -337,13 +337,23 @@ function toggleUploadArea() {
 // Upload result persistence functions
 function saveUploadResults(data) {
     try {
-        const uploadData = {
+        const currentUser = getCurrentUserId();
+        const currentSession = getSessionId();
+        
+        if (!currentUser || !currentSession) {
+            console.warn('Cannot save upload results: no user or session');
+            return;
+        }
+        
+        const dataToSave = {
             ...data,
+            userId: currentUser,
+            sessionId: currentSession,
             savedAt: new Date().toISOString(),
             pageUrl: window.location.pathname
         };
-        saveToLocalStorage('researchmate_upload_results', uploadData);
-        console.log('Upload results saved to localStorage');
+        
+        saveToLocalStorage('researchmate_upload_results', dataToSave);
     } catch (error) {
         console.error('Failed to save upload results:', error);
     }
@@ -354,15 +364,38 @@ function restoreUploadResults() {
         const resultsContainer = document.getElementById('results-container');
         if (!resultsContainer) return;
         
+        // Get current user from session/token
+        const currentUser = getCurrentUserId(); // You'll need to implement this
+        if (!currentUser) {
+            // No user logged in, clear any existing results
+            clearUploadResults();
+            return;
+        }
+        
         const savedData = loadFromLocalStorage('researchmate_upload_results');
         if (savedData && savedData.pageUrl === window.location.pathname) {
-            // Check if data is recent (within 24 hours)
+            // Check if data belongs to current user
+            if (savedData.userId !== currentUser) {
+                console.log('Upload results belong to different user, clearing');
+                clearUploadResults();
+                return;
+            }
+            
+            // Check if data is from current session
+            const currentSessionId = getSessionId(); // You'll need to implement this
+            if (savedData.sessionId !== currentSessionId) {
+                console.log('Upload results from different session, clearing');
+                clearUploadResults();
+                return;
+            }
+            
+            // Check if data is recent (within current session, max 1 hour)
             const savedTime = new Date(savedData.savedAt);
             const now = new Date();
             const hoursDiff = (now - savedTime) / (1000 * 60 * 60);
             
-            if (hoursDiff < 24) {
-                console.log('Restoring upload results from localStorage');
+            if (hoursDiff < 1) {
+                console.log('Restoring upload results from current session');
                 displayUploadResults(savedData);
                 showToast('Previous PDF analysis restored', 'info', 3000);
             } else {
@@ -373,6 +406,33 @@ function restoreUploadResults() {
     } catch (error) {
         console.error('Failed to restore upload results:', error);
     }
+}
+
+// Helper function to get current user ID
+function getCurrentUserId() {
+    try {
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (!token) return null;
+        
+        // Decode JWT token to get user ID (simple base64 decode)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.user_id || payload.sub;
+    } catch (error) {
+        console.error('Failed to get current user ID:', error);
+        return null;
+    }
+}
+
+// Helper function to get session ID
+function getSessionId() {
+    // Use browser session storage for session ID
+    let sessionId = sessionStorage.getItem('researchmate_session_id');
+    if (!sessionId) {
+        // Generate new session ID if not exists
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem('researchmate_session_id', sessionId);
+    }
+    return sessionId;
 }
 
 function clearUploadResults() {

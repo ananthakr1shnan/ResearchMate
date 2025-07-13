@@ -32,9 +32,9 @@ security = HTTPBearer(auto_error=False)
 class Settings:
     def __init__(self):
         self.server = type('ServerSettings', (), {
-            'debug': True,
-            'host': '127.0.0.1',
-            'port': 8000
+            'debug': False,
+            'host': '0.0.0.0',
+            'port': int(os.environ.get('PORT', 8000))
         })()
         self.security = type('SecuritySettings', (), {
             'cors_origins': ["*"],
@@ -197,7 +197,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="ResearchMate API",
     description="AI Research Assistant powered by Groq Llama 3.3 70B",
-    version="2.0.0",
+    version="1.0.0",
     debug=settings.server.debug,
     lifespan=lifespan
 )
@@ -706,14 +706,19 @@ async def startup_event():
 
 # Run the application
 if __name__ == "__main__":
-    print("Starting ResearchMate Web Application...")
-    print(f"Web Interface: http://127.0.0.1:8000")
-    print(f"API Documentation: http://127.0.0.1:8000/docs")
+    import os
+    
+    # Hugging Face Spaces uses port 7860
+    port = int(os.environ.get('PORT', 7860))
+    host = "0.0.0.0"
+    
+    print("Starting ResearchMate on Hugging Face Spaces...")
+    print(f"Web Interface: http://0.0.0.0:{port}")
+    print(f"API Documentation: http://0.0.0.0:{port}/docs")
     
     uvicorn.run(
         "main:app",
-        host="127.0.0.1",
-        port=8000,
-        reload=True,
+        host=host,
+        port=port,
         log_level="info"
     )

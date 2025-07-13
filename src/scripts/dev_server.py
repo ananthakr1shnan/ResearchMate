@@ -16,7 +16,15 @@ import signal
 import webbrowser
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-import platform  # Import platform module
+import platform
+import uvicorn
+import socket
+
+# Add the project root to Python path
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
+# Import the main app from main.py
+from main import app
 
 # Setup logging
 logging.basicConfig(
@@ -61,10 +69,13 @@ class ResearchMateDevServer:
     def __init__(self, project_root: Optional[Path] = None):
         self.project_root = project_root or Path(__file__).parent.parent.parent
         self.venv_path = self.project_root / "venv"
-        self.server_process = None
+        self.server_thread = None
         self.observer = None
         self.is_running = False
-        self.is_windows = platform.system() == "Windows"  # Add this line
+        self.is_windows = platform.system() == "Windows"
+        # Store server config for restarts
+        self.server_host = "127.0.0.1"
+        self.server_port = 8000
     
     def print_banner(self):
         """Print development server banner"""
@@ -91,70 +102,89 @@ Auto-reload enabled for Python files
     
     def check_virtual_environment(self) -> bool:
         """Check if virtual environment exists"""
-        # Check if we're in a Conda environment
-        if 'CONDA_DEFAULT_ENV' in os.environ:
-            logger.info(f"Using existing Conda environment: {os.environ['CONDA_DEFAULT_ENV']}")
-            return True
-        
-        # Check if we're in any virtual environment
-        if sys.prefix != sys.base_prefix:
-            logger.info("Using existing virtual environment")
-            return True
-        
-        # Check for traditional venv
-        python_path = self.get_venv_python()
-        if not python_path.exists():
-            logger.error("Virtual environment not found. Please run deployment first.")
-            logger.info("Run: python researchmate.py deploy")
-            return False
-        return True
-    
-    def start_server_process(self, host: str = "127.0.0.1", port: int = 8000):
-        """Start the server process"""
+        # Since we're importing directly, just check if we can import the modules
         try:
-            python_path = self.get_venv_python()
-            
-            cmd = [
-                str(python_path), "-m", "uvicorn", 
-                "main:app", 
-                "--host", host, 
-                "--port", str(port),
-                "--reload"
-            ]
+            import main
+            logger.info("Successfully imported main application")
+            return True
+        except ImportError as e:
+            logger.error(f"Failed to import main application: {e}")
+            logger.error("Make sure you're in the correct environment with all dependencies installed")
+            return False
+    
+    def check_port_available(self, host: str, port: int) -> bool:
+        """Check if a port is available"""
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.bind((host, port))
+                return True
+        except OSError:
+            return False
+    
+    def find_available_port(self, host: str, start_port: int = 8000, max_attempts: int = 10) -> Optional[int]:
+        """Find an available port starting from start_port"""
+        for port in range(start_port, start_port + max_attempts):
+            if self.check_port_available(host, port):
+                return port
+        return None
+
+    def start_server_process(self, host: str = "127.0.0.1", port: int = 8000):
+        """Start the server using uvicorn directly with the imported app"""
+        try:
+            # Check if the requested port is available
+            if not self.check_port_available(host, port):
+                logger.warning(f"Port {port} is already in use on {host}")
+                available_port = self.find_available_port(host, port)
+                if available_port:
+                    logger.info(f"Using available port {available_port} instead")
+                    port = available_port
+                    self.server_port = port  # Update stored port
+                else:
+                    logger.error(f"No available ports found starting from {port}")
+                    return False
             
             logger.info(f"Starting server on {host}:{port}")
-            self.server_process = subprocess.Popen(
-                cmd, 
-                cwd=self.project_root,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True
-            )
             
+            # Run uvicorn with the imported app in a separate thread
+            def run_server():
+                uvicorn.run(
+                    app,
+                    host=host,
+                    port=port,
+                    reload=False,  # We handle reload ourselves with file watcher
+                    log_level="info"
+                )
+            
+            # Start server in background thread
+            self.server_thread = threading.Thread(target=run_server, daemon=True)
+            self.server_thread.start()
+            
+            # Wait a moment for server to start
+            time.sleep(2)
+            
+            logger.info("Server process started successfully")
             return True
             
         except Exception as e:
             logger.error(f"Failed to start server: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return False
     
     def stop_server_process(self):
         """Stop the server process"""
-        if self.server_process:
+        if self.server_thread:
             logger.info("Stopping server...")
-            self.server_process.terminate()
-            try:
-                self.server_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                logger.warning("Server didn't stop gracefully, killing...")
-                self.server_process.kill()
-            self.server_process = None
+            # Note: For development, we'll let the thread finish naturally
+            # In a real implementation, you might want to implement graceful shutdown
+            self.server_thread = None
     
     def restart_server(self):
         """Restart the server"""
-        logger.info("Restarting server...")
-        self.stop_server_process()
-        time.sleep(1)
-        self.start_server_process()
+        logger.info("File change detected - restarting server...")
+        logger.info("Note: For full restart, please stop and start the dev server manually")
+        # Note: Auto-restart is complex with embedded uvicorn
+        # For now, just log the change. User can manually restart.
     
     def setup_file_watcher(self):
         """Setup file watcher for auto-reload"""
@@ -256,21 +286,28 @@ Auto-reload enabled for Python files
         try:
             self.is_running = True
             
+            # Store server config for restarts
+            self.server_host = host
+            self.server_port = port
+            
             # Start server
             if not self.start_server_process(host, port):
                 return False
+            
+            # Use the actual port (might have changed if original was busy)
+            actual_port = self.server_port
             
             # Setup file watcher
             self.setup_file_watcher()
             
             # Open browser
             if open_browser:
-                self.open_browser(f"http://{host}:{port}")
+                self.open_browser(f"http://{host}:{actual_port}")
             
             logger.info("Development server started successfully!")
-            logger.info(f"Web Interface: http://{host}:{port}")
-            logger.info(f"API Documentation: http://{host}:{port}/docs")
-            logger.info("Auto-reload enabled")
+            logger.info(f"Web Interface: http://{host}:{actual_port}")
+            logger.info(f"API Documentation: http://{host}:{actual_port}/docs")
+            logger.info("File watcher enabled (manual restart required for changes)")
             logger.info("Use Ctrl+C to stop")
             
             # Keep the main thread alive

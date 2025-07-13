@@ -1,0 +1,57 @@
+# Docker ignore file for ResearchMate
+# Ignore unnecessary files and directories
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Data directories (will be mounted as volumes)
+data/
+logs/
+chroma_persist/
+chroma_db/
+Notebook/
+uploads/
+
+
+# Development files
+test_*.py
+debug_*.py
+*.bak
+*.tmp
+
+# Documentation
+README.md
+*.md
+
+# Environment files (will be passed as env vars)
+.env
+
+# Backup files
+backups/
+tmp/

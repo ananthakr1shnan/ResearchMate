@@ -120,7 +120,7 @@ projects.json
 projects_backup_*.json
 
 # Development files
-test_*.py
+
 test_*.html
 test_*.json
 debug_*.py
