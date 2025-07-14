@@ -34,7 +34,7 @@ class Settings:
         self.server = type('ServerSettings', (), {
             'debug': False,
             'host': '0.0.0.0',
-            'port': int(os.environ.get('PORT', 8000))
+            'port': int(os.environ.get('PORT', 80))  # Changed default from 8000 to 80 for Azure
         })()
         self.security = type('SecuritySettings', (), {
             'cors_origins': ["*"],
@@ -348,6 +348,12 @@ async def test_search_page(request: Request):
         content = f.read()
     return HTMLResponse(content=content)
 
+# Health check endpoint for Azure
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Azure and other platforms"""
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
+
 # API endpoints
 @app.post("/api/search")
 async def search_papers(query: SearchQuery, current_user: dict = Depends(get_current_user_dependency)):
@@ -584,7 +590,7 @@ async def get_status(current_user: dict = Depends(get_current_user_dependency)):
                 'success': True,
                 'statistics': result.get('statistics', {
                     'rag_documents': 0,
-                    'system_version': '2.0.0',
+                    'system_version': '1.0.0',
                     'status_check_time': datetime.now().isoformat()
                 }),
                 'components': result.get('components', {})
@@ -685,10 +691,10 @@ async def trigger_initialization():
     else:
         return {"message": "Already initialized"}
 
-# Health check endpoint
+# Legacy health check endpoint
 @app.get("/api/health")
-async def health_check():
-    """Health check endpoint"""
+async def api_health_check():
+    """Legacy health check endpoint"""
     return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
 # Update the existing FastAPI app to use lifespan
@@ -708,11 +714,11 @@ async def startup_event():
 if __name__ == "__main__":
     import os
     
-    # Hugging Face Spaces uses port 7860
-    port = int(os.environ.get('PORT', 7860))
+    # Azure uses port 80, but allow override with environment variable
+    port = int(os.environ.get('PORT', 80))
     host = "0.0.0.0"
     
-    print("Starting ResearchMate on Hugging Face Spaces...")
+    print(f"Starting ResearchMate on Azure Container Instance...")
     print(f"Web Interface: http://0.0.0.0:{port}")
     print(f"API Documentation: http://0.0.0.0:{port}/docs")
     

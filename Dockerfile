@@ -9,8 +9,12 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    git \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
     && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
@@ -26,12 +30,12 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p /app/data /app/logs /app/chroma_persist /app/uploads
 
-# Spaces uses port 7860
-EXPOSE 7860
+# Azure uses port 80 by default
+EXPOSE 80
 
-# Health check
+# Health check updated for port 80
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:7860/health || exit 1
+  CMD curl -f http://localhost:80/health || exit 1
 
 # Start the application
 CMD ["python", "main.py"]

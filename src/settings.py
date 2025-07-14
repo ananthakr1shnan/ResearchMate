@@ -19,7 +19,7 @@ load_dotenv()
 class ServerConfig:
     """Server configuration settings"""
     host: str = "0.0.0.0"
-    port: int = 8000
+    port: int = int(os.environ.get('PORT', 80))
     debug: bool = False
     reload: bool = False
     workers: int = 1
