@@ -716,8 +716,8 @@ if __name__ == "__main__":
     
     # Azure uses port 80, but allow override with environment variable
     port = int(os.environ.get('PORT', 80))
-    host = "0.0.0.0"
-    
+    host = "0.0.0.0"  # Use 0.0.0.0 to listen on all interfaces
+
     print(f"Starting ResearchMate on Azure Container Instance...")
     print(f"Web Interface: http://0.0.0.0:{port}")
     print(f"API Documentation: http://0.0.0.0:{port}/docs")
