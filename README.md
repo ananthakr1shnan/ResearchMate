@@ -1,27 +1,50 @@
-# ResearchMate 🔬
+<div align="center">
+
+# 🔬 ResearchMate — AI Research Assistant with RAG & LLMs
 
 **An AI-powered research assistant that revolutionizes how researchers discover, analyze, and manage academic literature using advanced Retrieval-Augmented Generation (RAG) and large language models.**
 
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**Tech Stack:** Python • FastAPI • Transformers • Groq (LLaMA 3.3 70B) • ChromaDB • RAG
+
+> 📖 Built as a solo effort to deepen my understanding of modern NLP stacks — including RAG pipelines, citation graph analysis, and LLM-powered literature review generation.
+
+</div>
+
+---
+
 ## 🎯 Project Overview
 
-ResearchMate is a comprehensive research management platform that combines the power of modern AI with traditional research workflows. It leverages **Retrieval-Augmented Generation (RAG)** to provide intelligent, context-aware responses about academic papers, enabling researchers to quickly extract insights, identify trends, and manage their literature more effectively.
+**ResearchMate** is a full-stack research assistant system designed to explore the integration of **Retrieval-Augmented Generation (RAG)** pipelines, **citation graph analysis**, and **task-specific prompting** for academic research support. Built entirely as a solo project, it serves as a practical study in applying LLMs (specifically Groq-hosted LLaMA 3.3 70B) to literature review automation, scientific Q&A, and research trend analysis.
 
-### The Problem ResearchMate Solves
+### 🔍 Motivation
 
-- **Information Overload**: Researchers struggle to keep up with the exponential growth of academic literature
-- **Time-Consuming Analysis**: Manual paper analysis and note-taking is inefficient and error-prone
-- **Knowledge Fragmentation**: Research insights scattered across multiple papers and sources
-- **Limited Searchability**: Traditional keyword-based search fails to capture semantic meaning
-- **Collaboration Barriers**: Difficulty sharing and building upon research findings
+The academic landscape is increasingly characterized by:
+- **Rapid publication velocity**, making it difficult to track developments in a domain
+- **Shallow context understanding** in traditional keyword-based retrieval tools (e.g., Google Scholar, Semantic Scholar)
+- **Disjointed workflows**, where search, summarization, and citation management are siloed
 
-### The Solution
+This project aims to build an integrated system where these capabilities are unified using **RAG + vector search + LLM-based synthesis**, offering a more coherent and semantically rich research workflow.
 
-ResearchMate uses advanced AI to create a **semantic research assistant** that:
-- Understands research questions in natural language
-- Retrieves relevant information from vast academic databases
-- Generates contextually accurate, citation-backed responses
-- Maintains research projects with organized knowledge bases
-- Tracks research trends and provides analytical insights
+### ⚙️ Technical Goals
+
+- Implement a **custom RAG pipeline** for semantic search and summarization over paper corpora
+- Develop **project-based research management**, enabling storage and recall of paper sets by topic
+- Use **ChromaDB** for document vector storage, embedding papers with Sentence Transformers
+- Perform **citation network analysis**, extracting structured citation graphs from uploaded PDFs
+- Run LLM inference using **Groq Cloud (LLaMA 3.3 70B)** for high-throughput, low-latency generation
+- Support **multi-turn question-answering**, trend detection, and review generation over paper clusters
+- Enable **upload and PDF parsing**, converting documents into extractive + abstractive summaries
+
+### 🔬 Learning Focus
+
+This project was built for the purpose of:
+- Deepening my understanding of **LLM application architectures**, especially RAG
+- Experimenting with **embedding-based search**, hybrid pipelines, and LLM prompting
+- Building robust backends using **FastAPI**, integrating with frontend templates and API routes
+- Handling real-world constraints like **low-resource deployment**, **cold-start initialization**, and **secure multi-user access**
 
 ---
 
