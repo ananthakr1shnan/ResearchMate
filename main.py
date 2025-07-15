@@ -713,8 +713,6 @@ async def startup_event():
 # Run the application
 if __name__ == "__main__":
     import os
-    
-    # Azure uses port 80, but allow override with environment variable
     port = int(os.environ.get('PORT', 80))
     host = "0.0.0.0"  # Use 0.0.0.0 to listen on all interfaces
 
