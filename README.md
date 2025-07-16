@@ -111,7 +111,7 @@ Query → Embedding → Vector Search → Context Retrieval → LLM Generation �
 #### Development & Infrastructure
 - **Development Server**: Custom server with hot-reload capabilities
 - **Containerization**: Docker and Docker Compose
-- **Deployment**: Render-ready with environment-based configuration
+- **Deployment**: Azure App Service with environment-based configuration
 - **Monitoring**: Health checks and comprehensive logging
 
 ## ✨ Features & Capabilities
