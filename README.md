@@ -6,12 +6,20 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Deployed on Azure](https://img.shields.io/badge/Azure-Live%20App-blue?logo=windows)](https://researchmate-fvfkhxa7djahf5ds.canadacentral-01.azurewebsites.net)
 
-**Tech Stack:** Python • FastAPI • Transformers • Groq (LLaMA 3.3 70B) • ChromaDB • RAG
+<p align="center">
+  <a href="https://researchmate-fvfkhxa7djahf5ds.canadacentral-01.azurewebsites.net" target="_blank">
+    <img src="https://img.shields.io/badge/🚀 Try%20it%20Now-Click%20to%20Launch-blue?style=for-the-badge" alt="Try it Now">
+  </a>
+</p>
+
+**Tech Stack:** Python • FastAPI • Transformers • Groq (LLaMA 3.3 70B) • ChromaDB • RAG • Docker
 
 > 📖 Built as a solo effort to deepen my understanding of modern NLP stacks — including RAG pipelines, citation graph analysis, and LLM-powered literature review generation.
 
 </div>
+
 
 ---
 
@@ -319,61 +327,14 @@ python src/scripts/manager.py reset-db
 
 ---
 
-## 📖 Usage Examples
-
-### Web Interface
-
-1. **Create a Research Project**
-   - Navigate to Projects tab
-   - Click "New Project"
-   - Upload relevant papers or search for literature
-
-2. **Search and Analyze**
-   - Use natural language queries: "What are the latest advances in transformer architectures?"
-   - Get AI-generated summaries with citations
-   - Explore related papers and concepts
-
-3. **Generate Literature Reviews**
-   - Select papers from your project
-   - Click "Generate Review"
-   - Get comprehensive analysis with key insights
-
-### API Integration
-
-```python
-import requests
-
-# Authentication
-response = requests.post("http://127.0.0.1:8000/api/login", json={
-    "username": "researcher",
-    "password": "secure_password"
-})
-token = response.json()["access_token"]
-headers = {"Authorization": f"Bearer {token}"}
-
-# Semantic search
-response = requests.post("http://127.0.0.1:8000/api/search", 
-    json={"query": "neural networks for natural language processing"}, 
-    headers=headers
-)
-results = response.json()
-
-# Ask questions about retrieved papers
-response = requests.post("http://127.0.0.1:8000/api/ask",
-    json={"question": "What are the computational advantages of attention mechanisms?"},
-    headers=headers
-)
-answer = response.json()
-
-# Upload and analyze papers
-files = {"file": open("research_paper.pdf", "rb")}
-response = requests.post("http://127.0.0.1:8000/api/upload", 
-    files=files, headers=headers
-)
-analysis = response.json()
-```
-
 ## 🚀 Deployment
+
+### 🔗 Live Demo
+
+Access the deployed ResearchMate app here:  
+🌐 **[ResearchMate on Azure](https://researchmate-fvfkhxa7djahf5ds.canadacentral-01.azurewebsites.net)**  
+Hosted via **Azure App Service** (Canada Central region)
+
 
 ### Docker Deployment (Recommended)
 
